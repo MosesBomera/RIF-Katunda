@@ -1,2 +1,2 @@
 # RIF-Katunda
-This repository contains RIF Katunda project (A Portable Deep Learning-based Platform for Passion Fruit Disease Identification) source code files.
+This repository contains the source code files of RIF Katunda project, a portable deep learning-based platform for passion fruit disease identification.
