@@ -34,18 +34,24 @@ end
 filePattern = fullfile(sourceFolder, '*.jpg');                               % Change to whatever pattern you need.
 theFiles = dir(filePattern);
 
+% Use any of the three folders
+croppedFiles = dir(fullfile(folderPaths(1), '*.jpg'));
+croppedFilesList = []
+
+% Probably need unpacking
+for k = 1 : length(croppedFiles)
+    croppedFilesList = [croppedFilesList croppedFiles(k).name]
+end
+
 for k = 1: length(theFiles)
    baseFileName = theFiles(k).name;
-   image = imread(baseFileName); 
-   croppedImage=imcrop(image);                         			     % Use cross hairs to select region to crop, then double click
-   % Delete or rename original image
-   % Check both storefolder and sourcefolder file names
-   % if file_name is in storefolder, skip
-   for i = 1: length(imageSizes)
+   if ~ismember(baseFileName, croppedFilesList)
+       image = imread(baseFileName); 
+       croppedImage=imcrop(image);                         	             % Use cross hairs to select region to crop, then double click
+       for i = 1: length(imageSizes)
        resizedImage = imresize(croppedImage, [imageSizes(i) imageSizes(i)]); % Cropped region is resized to this
        fullFileName = fullfile(folderPaths(i), baseFileName); 		     % Keep original file name
        imwrite(resized_image,fullFileName);                                  % Full path name?
+       end
    end
-    
 end 
-
