@@ -1,7 +1,7 @@
 % Crop and resize images under new file names in a different directory 
 % Cosmas 2/10/2020
 % Bomera 2/29/2020
-% Bomera 3/18/2020
+% Bomera 3/18/2020  
 
 clear variables;
 clc;
