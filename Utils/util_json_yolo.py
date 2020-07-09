@@ -5,6 +5,7 @@ Utility to convert from Labelbox JSON to YOLO format. Also handles test, train s
 - The script is desigened to be run within the convert folder.
 - NOTE: The labels are saved separately so depending on your YOLO setup you may have to combine them with the images
 '''
+from sys import argv, exit
 
 import json
 import os
@@ -21,7 +22,7 @@ from tqdm import tqdm
 
 #GLOBAL DIRECTORY DEFINITIONS (change as you see fit)
 OUTPUT_DIR = "../yolo/out/" # Folder into with the labels will be pt
-IMAGE_ABS_DIR = r"/home/bomera/Shared/brownspot/images"
+IMAGE_ABS_DIR = r"/home/bomera/Shared/brownspot/brownspot"
 #Folder in which the labelbox json files are placed (names are not important)
 LABELBOX_ABS_DIR = r"/home/bomera/Shared/brownspot/labelbox"
 
@@ -229,16 +230,20 @@ if __name__ == '__main__':
     # if source is 'labelbox':  # Labelbox https://labelbox.com/
     #  convert_labelbox_json(name='brownspot_phase_I',
     #                         file='../labelbox/labels_cosmas.json')
+
+    #
     filenames = []
+    directory = os.path.join(os.getcwd(), 'test')
+    filenames = os.listdir(directory)
 
-    with open('/home/bomera/Shared/brownspot/train.txt', 'r') as train:
-        lines = train.readlines()
-        for line in lines:
-            line = line.rstrip('\n')
-            contents = line.split('/')
-            filenames.append(contents[-1])
+    # with open('/home/bomera/Shared/brownspot/train.txt', 'r') as train:
+    #     lines = train.readlines()
+    #     for line in lines:
+    #         line = line.rstrip('\n')
+    #         contents = line.split('/')
+    #         filenames.append(contents[-1])
 
-    xml_to_csv_and_pbtxt(IMAGE_ABS_DIR, filenames, train)
+    xml_to_csv_and_pbtxt(IMAGE_ABS_DIR, filenames, 'test')
 
 
 

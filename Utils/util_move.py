@@ -6,9 +6,14 @@ from sys import argv, exit
 directory = os.getcwd()
 # print(os.listdir('.'))
 
-if len(argv) != 2:
-    print("Usage: util.py file.txt")
+if len(argv) != 3:
+    print("Usage: python util.py file.txt IN_DIR OUT_DIR \
+          \nIN_DIR     the directory with the files \
+          \nOUT_DIR    the directory to which the files are going.")
     exit(1)
+
+IN_DIR = argv[2]            #
+OUT_DIR = argv[3]
 
 # os.rename(os.path.join(directory, 'dataset', 'train.txt'), os.path.join(directory, 'train.txt'))
 file = os.path.join(directory, argv[1])
