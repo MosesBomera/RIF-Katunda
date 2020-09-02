@@ -24,7 +24,7 @@ from tqdm import tqdm
 OUTPUT_DIR = "../yolo/out/" # Folder into with the labels will be pt
 IMAGE_ABS_DIR = r"/home/bomera/Shared/brownspot/brownspot"
 #Folder in which the labelbox json files are placed (names are not important)
-LABELBOX_ABS_DIR = r"/home/bomera/Shared/brownspot/labelbox"
+LABELBOX_ABS_DIR = r"labels"
 
 CLASS_ID = 1
 
@@ -150,7 +150,7 @@ def convert_labelbox_json(name, file):
     split_files(OUTPUT_DIR, file_names, train=0.7, test=0.2, validate=0.1)
     print('Done. Output saved to %s' % (OUTPUT_DIR,))
 
-def xml_to_csv_and_pbtxt(folder_path, filenames, kind):
+def xml_to_csv_and_pbtxt(folder_path, filenames):
   #parsing a large json fail to python
   image_labels_json_file_names = get_json_files_in_dir(LABELBOX_ABS_DIR)
 
@@ -163,7 +163,7 @@ def xml_to_csv_and_pbtxt(folder_path, filenames, kind):
 
       # Generating the csv in the root of the dataset
   parent_dir = Path(folder_path).parent
-  csv_name = kind + '_labels.csv'
+  csv_name = 'labels.csv'
 
   prefix = Path(folder_path).name.lower()
   csv_file_name = os.path.join(str(parent_dir), csv_name)
@@ -173,8 +173,7 @@ def xml_to_csv_and_pbtxt(folder_path, filenames, kind):
     print('Working-csv')
     f = csv.writer(csv_label_file)
     # f.writerow(["Class", "fileName", "top","left","height","width"])
-    f.writerow(['filename', 'width', 'height', 'class', 'xmin', 'ymin',
-                'xmax', 'ymax'])
+    f.writerow(['file_name', 'xmin', 'ymin', 'width', 'height'])
 
     if data_list:
         for item in tqdm(data_list, desc="Images"):
@@ -205,19 +204,16 @@ def xml_to_csv_and_pbtxt(folder_path, filenames, kind):
                     width = bounding_box['bbox']['width']
 
                     #note that the axis refers to the top left corner of the image
-                    xmin = left
-                    xmax = left + width
-                    ymin = top # actually
-                    ymax = top + height
+                    # xmin = left
+                    # xmax = left + width
+                    # ymin = top # actually
+                    # ymax = top + height
 
                     f.writerow([file_name,
+                                left,
+                                top,
                                 width,
-                                height,
-                                class_name,
-                                xmin,
-                                ymin,
-                                xmax,
-                                ymax
+                                height
                                 ])
 
     else:
@@ -232,8 +228,7 @@ if __name__ == '__main__':
     #                         file='../labelbox/labels_cosmas.json')
 
     #
-    filenames = []
-    directory = os.path.join(os.getcwd(), 'test')
+    directory = os.path.join(os.getcwd(), 'train')
     filenames = os.listdir(directory)
 
     # with open('/home/bomera/Shared/brownspot/train.txt', 'r') as train:
@@ -243,7 +238,7 @@ if __name__ == '__main__':
     #         contents = line.split('/')
     #         filenames.append(contents[-1])
 
-    xml_to_csv_and_pbtxt(IMAGE_ABS_DIR, filenames, 'test')
+    xml_to_csv_and_pbtxt(directory, filenames)
 
 
 

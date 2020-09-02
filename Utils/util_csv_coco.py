@@ -4,7 +4,7 @@
 This script converts a labels.csv file to a COCO format JSON file.
 The labels.csv file is expected to be in the following column format:
 
-| 'filename', 'width', 'height', 'class', 'xmin', 'ymin', 'xmax', 'ymax' |
+| 'file_name', 'xmin', 'ymin', 'width', 'height' |
 
 The output file is named instances_(train|val).json depending on the flag
 given.
@@ -38,8 +38,8 @@ FLAG = str(argv[1][1:])
 # DIRECTORIES
 PROJECT_DIR = os.getcwd() #  project_name: brownspot
 TRAIN_DIR = os.path.join(PROJECT_DIR, 'train')
-VAL_DIR = os.path.join(PROJECT_DIR, 'val')
-TEST_DIR =os.path.join(PROJECT_DIR, 'test')
+# VAL_DIR = os.path.join(PROJECT_DIR, 'val')
+# TEST_DIR =os.path.join(PROJECT_DIR, 'test')
 ANNOTATIONS_DIR = os.path.join(PROJECT_DIR, 'annotations')
 
 ANNOTATION_FILE = argv[2]
@@ -48,11 +48,13 @@ CUR_DIR = os.path.join(PROJECT_DIR, FLAG)
 
 def main():
     # Make directories and if necessary move the images in the respective folders.
-    dirs = [TRAIN_DIR, VAL_DIR, ANNOTATIONS_DIR]
-    make_dirs(dirs)
+    # dirs = [TRAIN_DIR, VAL_DIR, ANNOTATIONS_DIR]
+    # make_dirs(dirs)
+
+    filenames = os.listdir(TRAIN_DIR)
 
     # COCO format file
-    output_annotation_file = os.path.join(ANNOTATIONS_DIR, "instances_" + FLAG + ".json")
+    output_annotation_file = os.path.join("instances_" + FLAG + ".json")
     labels = pd.read_csv(ANNOTATION_PATH)
 
     # Get the category list
@@ -61,7 +63,7 @@ def main():
 
     categories = ['brownspot']
     # make and create coco file
-    coco_data = make_coco_file(labels, categories)
+    coco_data = make_coco_file(labels, categories, filenames)
     create_file(coco_data, output_annotation_file)
 
 def make_dirs(dirs):
@@ -70,13 +72,12 @@ def make_dirs(dirs):
         if not os.path.isdir(dir):
             os.mkdir(dir)
 
-def make_coco_file(labels, categories):
+def make_coco_file(labels, categories, filenames):
     """Creates a COCO format data structure."""
-
-    columns = labels.columns
 
     classes = sorted(categories)
     category_list = []
+
     # COCO ANNOTATION FORMAT
     for i, category in enumerate(classes):
         foo = {}
@@ -85,8 +86,7 @@ def make_coco_file(labels, categories):
         foo["name"] = category
         category_list.append(foo)
 
-
-    # Might need to create a YML
+    # COCO VARIABLE
     COCO_DATA = {}
     COCO_DATA["type"] = "instances"
     COCO_DATA["images"] = []
@@ -96,38 +96,27 @@ def make_coco_file(labels, categories):
     image_id = 0 # Image id
     annotation_id = 0 # Annotation id
 
-    i = 0
-    length = len(labels)
+    label = "brownspot" # Different implementation for more than one label
 
-    # Follow on the progress
-    pbar = tqdm(total=length, desc="Working")
-    while (i < length):
-        file_name = labels[columns[0]][i]
+    # Iterate through the filenames
+    for file_name in tqdm(filenames, desc="Creating COCO: "):
 
-        image_path = os.path.join(CUR_DIR, file_name)
-        label = str(labels[columns[3]][i])
-        #
-        if (not os.path.isfile(image_path)):
-            continue
-        image = Image.open(image_path)
-        width, height = image.size
-
-        # width = int(labels[columns[1]][i])
-        # height = int(labels[columns[2]][i])
-
+        # Add to COCO images
         temp = {}
         temp["file_name"] = file_name
-        temp["height"] = height
-        temp["width"]  = width
+        temp["height"] = 400 # Could be dynamic
+        temp["width"]  = 400
         temp["id"]  = image_id
         COCO_DATA["images"].append(temp)
 
-        # Assign all annotations of a given image once
-        while True:
-            xmin = int(labels[columns[4]][i])
-            ymin = int(labels[columns[5]][i])
-            xmax = int(labels[columns[6]][i])
-            ymax = int(labels[columns[7]][i])
+        # Bboxes
+        image_bboxes = labels[labels.file_name == file_name]
+
+        for _, row in image_bboxes.iterrows():
+            xmin = float(row["xmin"])
+            ymin = float(row["ymin"])
+            width = float(row["width"])
+            height = float(row["height"])
 
             temp = {}
             temp["id"] = annotation_id
@@ -135,28 +124,15 @@ def make_coco_file(labels, categories):
             temp["image_id"] = image_id
             temp["segmentation"] = []
             temp["ignore"] = 0
-            temp["area"] = (xmax - xmin) * (ymax - ymin)
+            temp["area"] = width * height
             temp["iscrowd"] = 0
-            temp["bbox"] = [xmin, ymin, xmax - xmin, ymax - ymin]
+            temp["bbox"] = [xmin, ymin, width, height]
             temp["category_id"] = classes.index(label) + 1 # There is only one class
-
             COCO_DATA["annotations"].append(temp)
-
-            # Update i and prevent out of range error
-            i += 1
-            pbar.update(1)
-            if (i >= length):
-                break
-
-            next_file = labels[columns[0]][i]
-
-            # Check if next file is the same as the current one.
-            if (file_name != next_file):
-                break
-
-        # Update image_id
+        # Update image id
         image_id += 1
-    pbar.close() # Progress bar
+
+    # Return coco data format
     return COCO_DATA
 
 def create_file(coco_data, output_file):

@@ -38,7 +38,7 @@ def main():
 
     # 3.0 Split the images into train, test, val
     file_names = os.listdir(DATASET_DIR)
-    train, test, val = split_files(file_names,train=0.7, test=0.1, validate=0.2)
+    train, test, val = split_files(file_names,train=0.85, test=0.05, validate=0.1)
 
     # 4.0 Create the COCO format *.json
     categories = ['brownspot']
