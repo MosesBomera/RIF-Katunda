@@ -36,6 +36,11 @@ last_spoken = None
 def main(args):
     global last_spoken
 
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+
     pygame.mouse.set_visible(False)
     screen.fill((0,0,0))
 
